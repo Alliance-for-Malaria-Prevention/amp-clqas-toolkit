@@ -1,0 +1,117 @@
+---
+title: "In-process assessment of ITN campaign household registration: [Country], [Year]"
+subtitle: "Final report example"
+author: "Eleanore Sternberg, Stephen Poyer"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Background
+
+## 1.1 Introduction
+
+Maintaining high coverage of insecticide-treated nets (ITN) for populations in need is important to provide community-level protection from malaria vectors. Most national malaria programmes (NMP) include ITN distribution to communities as the primary vector control intervention in their national malaria strategic plans (NMSP) and many NMPs prioritize the use of ITN mass campaigns to rapidly and equitably achieve high levels of ITN access. However, in some cases, households (HH) do not receive any ITNs or receive an incorrect number of ITNs (fewer or more than planned in relation to the campaign ITN allocation rules), leading to lower than expected ITN coverage following campaigns. Reasons for the discrepancy between ITN mass distribution campaign plans and actual results may be due to real or perceived ITN shortages during distribution, or errors or inconsistencies in household registration (HHR) and/or ITN distribution activities.
+
+Operationally, achieving high coverage of targeted populations requires registering all HHs and counting the number of occupants (or sleeping spaces) to determine the number of ITNs to allocate to each HH. When HHR is organized as a separate activity to ITN distribution, the results of HHR are used to determine the quantity of ITNs required at each distribution or pre-positioning site. HHR, if well planned, implemented and supervised, provides the best quality data possible to estimate the number of ITNs needed for the mass campaign. A multi-country study identified HHR as the most important factor in HHs receiving any net or enough nets to cover all HH members and ensuring equitable distributions across populations. 
+
+Complete and accurate HHR data is thus critical to successful microplanning and implementation of ITN campaigns. HHR errors can arise in several ways, including:
+- HHR personnel missing households entirely
+- HHR personnel misapplying the campaign definition of a household
+- HHR personnel misapplying campaign eligibility criteria when counting the number of eligible household members
+- Willful attempts by community members to artificially inflate the reported size of their household to receive more ITNs
+
+Ensuring the quality of HHR activities is vital to protect and maximize investments in malaria vector control. Provision of timely feedback – while HHR is on-going – increases the opportunity for corrective actions to improve HHR quality and, as a result, ITN campaign outcomes.
+
+## 1.2 Malaria, ITN and campaign overview
+
+- Briefly describe the malaria situation in the country and the key interventions being deployed.
+- Briefly describe the current ITN strategy, distribution channels and key indicators from population-based surveys and www.itnuse.org. 
+- Describe the rational for undertaking the in-process assessment, including any data or results from previous campaign activities as appropriate.
+- Describe the strategy for the current ITN campaign, including plans for HHR and the ITN allocation strategy.
+- List the campaign objectives and expected outcomes / targets.
+- State the definition of “household” used by the campaign.
+- State the eligibility criteria for HHR.
+
+```{r map, echo = TRUE}
+# Map of survey sites?
+```
+
+# Description of survey methods
+
+- Include a short paragraph that describes cluster LQAS.
+- Describe the assessment approach.
+- Describe the timing of the assessment in relation to the campaign activity.
+
+
+# Assessment results
+
+- Summary of data collected (how many interviews across how many clusters)
+- Table A1. Completeness and HHR errors by district
+- Table and Figure A3. Percentage of households with HHR errors, by assessment day
+- Modified Table A4 and A5. Incorrect counts of eligible persons at HHR: Cumulative results by district, and by region
+- Table A7 and A8. Reasons for incorrect count by district, by region
+- Table A9. Summary of total HHR errors and direction of errors
+- Table A10. Summary of assessment outcomes and reasons for errors
+- Lot classification
+
+```{r lotclass, echo = FALSE}
+
+# !!! Tweak size of text in footer
+# !!! Check understanding of what is meant by "decision rule" versus "classification category" and that the correct classification is shown. 
+
+lotc <- hh %>% group_by(region, district) %>%
+  summarise(across(c(interviewed, calc_elig_correct), \(x) sum(x, na.rm = TRUE)), .groups = "drop") %>%
+  mutate(incorr_n = interviewed - calc_elig_correct,
+         classification = case_when(
+           between(incorr_n, 0, 3) ~ "Good",
+           between(incorr_n, 4, 8) ~ "Uncertain",
+           incorr_n > 8 ~ "Inadequate")) %>%
+  select(region, district, incorr_n, classification) %>%
+  arrange(region, district) 
+
+# Create a flextable object 
+flextable(lotc) %>%
+  merge_v(j = "region") %>%
+  valign(j = "region", valign = "top") %>%
+  set_header_labels(region = "Region",
+                    district = "District (lot)",
+                    incorr_n = "Number of HHs with incorrect HHR count",
+                    classification = "Classification") %>%
+  set_caption(caption = "Classification of lots based on correct count of eligible persons during HHR. May 2025", 
+              style = "Table Caption", 
+              autonum = run_autonum(seq_id = "tab", bkm = "t_a3")) %>% # This sets the caption and autonom lets you crossreference the flextable in the text
+  # Set size of text
+  fontsize(size=10, part="header") %>% 
+  bold(bold = TRUE, part = "header") %>%
+  fontsize(size = 9, part = "body") %>%
+  fontsize(size = 8, part = "footer") %>%
+  set_table_properties(layout = "autofit") %>%
+  # Color in cells based on classification
+    bg(i = ~ classification == "Good",
+     j = "classification",
+     bg = "#d9ead3") %>%       # light green
+  bg(i = ~ classification == "Uncertain",
+     j = "classification",
+     bg = "#fff2cc") %>%       # light yellow
+  bg(i = ~ classification == "Inadequate",
+     j = "classification",
+     bg = "#f4cccc") %>%       # light red
+  # Footer text
+  add_footer_lines(paste("Data source:\n",
+                         "Assessment recount vs participant recall of HHR",
+                       sep = "")) %>%
+  add_footer_lines(paste("Decision rules (assuming 60 HH denominator):\n",
+                         "0-3 failures = Good\n",
+                         "4-8 failures = Uncertain\n",
+                         "9+ failures = Inadequate\n",
+                       sep = "")) 
+  my_theme()
+
+```
+
+#	Programmatic response detailing corrective actions taken by the HHR team
+
+#	Discussion
