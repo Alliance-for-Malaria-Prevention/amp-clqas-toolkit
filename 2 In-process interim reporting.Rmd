@@ -169,7 +169,7 @@ t_2_exp <- t_2 %>%
          "Reason for error" = reason_mismatch,
          "Details of mismatch" = descr_mismatch)
 
-write.xlsx(t_2_exp, paste("details of daily errors_day", day, ".xlsx"))
+write.xlsx(t_2_exp, paste0("details of daily errors_day", day, ".xlsx"))
 
 # Create a flextable object
 t_2 %>% 
